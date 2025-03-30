@@ -8,23 +8,8 @@ function sendSuccessResponse(res: Response, data: any, statusCode: number) {
   });
 }
 
-function sendErrorResponse(
-  res: Response,
-  message: string,
-  statusCode: number,
-  errors?: any
-) {
-  const response: any = {
-    success: false,
-    statusCode,
-    message,
-  };
-
-  if (errors) {
-    response.errors = errors;
-  }
-
-  res.status(statusCode).json(response);
+function sendErrorResponse(res: Response, message: string, statusCode: number) {
+  res.status(statusCode).json({ success: false, statusCode, message });
 }
 
 export function ok(res: Response, data: any) {
@@ -39,22 +24,8 @@ export function okNoResponse(res: Response) {
   res.status(204).send();
 }
 
-export function badRequest(res: Response, message: string, errors?: any) {
-  sendErrorResponse(res, message, 400, errors);
-}
-
-export function unauthorized(
-  res: Response,
-  message = "Authentication required"
-) {
-  sendErrorResponse(res, message, 401);
-}
-
-export function forbidden(
-  res: Response,
-  message = "You don't have permission to access this resource"
-) {
-  sendErrorResponse(res, message, 403);
+export function badRequest(res: Response, message: string) {
+  sendErrorResponse(res, message, 400);
 }
 
 export function notFound(res: Response, message = "Resource not found") {

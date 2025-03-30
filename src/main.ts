@@ -13,5 +13,3 @@ app.use("/api", routes);
 const server = app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}/api`);
 });
-
-export default app;

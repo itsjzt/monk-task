@@ -1,13 +1,17 @@
 import { Router, Request, Response } from "express";
-import {
-  getDiscounts,
-  getDiscount,
-  addDiscount,
-  modifyDiscount,
-  removeDiscount,
-} from "./controllers/discountController";
-import { applyDiscounts } from "./controllers/cartController";
 import { notFound } from "./utils/httpResponse";
+import {
+  getCouponByIdController,
+  listCouponsController,
+  createCouponController,
+  deleteCouponController,
+  updateCouponController,
+} from "./controllers/couponController";
+import {
+  applyCouponController,
+  getApplicableCouponsController,
+} from "./controllers/discountController";
+import { maskInternalErrors } from "./utils/maskInternalError";
 
 const router = Router();
 
@@ -20,12 +24,19 @@ router.get("/health", (req: Request, res: Response) => {
   });
 });
 
-router.get("/discounts", getDiscounts);
-router.get("/discounts/:id", getDiscount);
-router.post("/discounts", addDiscount);
-router.put("/discounts/:id", modifyDiscount);
-router.delete("/discounts/:id", removeDiscount);
-router.post("/cart/apply-discounts", applyDiscounts);
+router.get("/coupons", maskInternalErrors(listCouponsController));
+router.get("/coupons/:couponId", maskInternalErrors(getCouponByIdController));
+router.post("/coupons", maskInternalErrors(createCouponController));
+router.delete("/coupons/:couponId", maskInternalErrors(deleteCouponController));
+router.put("/coupons/:couponId", maskInternalErrors(updateCouponController));
+router.post(
+  "/applicable-coupons",
+  maskInternalErrors(getApplicableCouponsController)
+);
+router.post(
+  "/apply-coupon/:couponId",
+  maskInternalErrors(applyCouponController)
+);
 
 // Catch all for invalid paths
 router.all("*", (req: Request, res: Response) => {
