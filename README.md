@@ -1,5 +1,7 @@
 # Discount Service Project
 
+_Note_: BXGY coupons don't auto-apply you have to add both the buy products and get products for the discount to be applicable
+
 ## Folder Structure
 
 - **build/**: Compiled JavaScript files
@@ -67,6 +69,7 @@ Based on the codebase, these features could be implemented next:
 - **Limited Validation** - Some edge cases might not be fully handled
 - **Error Handling** - Could be more comprehensive for specific error types
 - **Testing** - No automated tests visible in the codebase
+- **UX** - BXGY coupons don't auto-apply you have to add both the buy products and get products for the discount to be applicable
 
 ## How to Run
 
