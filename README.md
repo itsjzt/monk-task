@@ -1,235 +1,285 @@
-# Discount Service Implementation Approach
+# Discount Service Project
 
-## Overview of the Assignment
+## Folder Structure
 
-This project involves creating a discount service for an e-commerce application that will allow merchants to create and manage different types of discounts for their products. The service should be flexible, scalable, and maintainable.
+- **build/**: Compiled JavaScript files
+- **src/**: TypeScript source code
+  - controllers/: API endpoint handlers
+  - data/: Data models and storage, use in-memory storage for coupons
+  - schemas/: Zod validation schemas and typescript types
+  - services/: Core business logic
+  - utils/: Helper functions
+  - main.ts: Application entry point
+  - routes.ts: API route definitions
+- **.vscode/**: VS Code configuration
 
-## System Design
+## Features Implemented
 
-### Architecture
+### Discount System
 
-- **Microservice Architecture**: Implement as an independent service with its own data store
-- **API-First Design**: Create RESTful endpoints for discount operations
-- **Event-Driven Communication**: Use message queues for communication with other services
+- Multiple discount types supported:
+  - Cart-wide percentage discounts (CART_WISE)
+  - Product-specific discounts (PRODUCT_WISE)
+  - Buy X Get Y promotions (BXGY)
+- Coupon management API (CRUD operations)
+- Validation using Zod schemas for all inputs
+- Cart total calculation with discount application
+- Error handling and response standardization
 
-### Core Components
+### API Endpoints
 
-1. **Discount Service API**
+- **Coupon Management:**
 
-   - Endpoints for CRUD operations on discounts
-   - Authentication and authorization middleware
-   - Input validation and error handling
+  - `GET /api/coupons` - List all coupons
+  - `GET /api/coupons/:couponId` - Get a specific coupon
+  - `POST /api/coupons` - Create a new coupon
+  - `PUT /api/coupons/:couponId` - Update a coupon
+  - `DELETE /api/coupons/:couponId` - Delete a coupon
 
-2. **Discount Engine**
+- **Discount Application:**
+  - `POST /api/applicable-coupons` - Find applicable coupons for a cart
+  - `POST /api/apply-coupon/:couponId` - Apply a specific coupon to a cart
 
-   - Rule evaluation system
-   - Discount calculation logic
-   - Eligibility checker
+### Utilities
 
-3. **Data Storage**
+- Error masking for internal server errors
+- Cart total calculation
+- Coupon expiration checking
+- HTTP response standardization
 
-   - Discount definitions
-   - Discount rules
-   - Usage records and analytics
+## Future Features
 
-4. **Event Handlers**
-   - Listen for order events
-   - Process discount applications
-   - Emit discount application events
+Based on the codebase, these features could be implemented next:
 
-## Discount Types and Models
+1. **Database Integration** - Replace in-memory storage with a persistent database
+2. **Authentication & Authorization** - Secure coupon management endpoints
+3. **Advanced Discount Rules** - Implement more complex eligibility rules
+4. **Discount Stacking** - Allow multiple compatible discounts to be combined
+5. **Usage Analytics** - Track coupon usage and effectiveness
+6. **User-specific Discounts** - Target discounts to specific user segments
+7. **Discount Code Generation** - Create unique discount codes for marketing campaigns
 
-### Discount Models
+## Constraints and Issues
 
-1. **Percentage Discount (CART_WISE)**
+- **In-memory Storage** - Currently using array-based storage that resets on service restart
+- **Single Discount Application** - Only applies one discount at a time (most beneficial)
+- **No Authentication** - API endpoints lack proper security
+- **Limited Validation** - Some edge cases might not be fully handled
+- **Error Handling** - Could be more comprehensive for specific error types
+- **Testing** - No automated tests visible in the codebase
 
-   - Apply a percentage reduction to entire cart value
-   - Can have minimum order threshold requirements
+## How to Run
 
-2. **Product Specific Discount (PRODUCT_WISE)**
+### Prerequisites
 
-   - Apply a percentage reduction to specific product prices
-   - Only affects selected products in the cart
+- Node.js (recent version)
+- npm or yarn
 
-3. **Buy X Get Y (BXGY)**
+### Setup and Installation
 
-   - Buy specific products and get others for free or at a reduced price
-   - Requires specific products in certain quantities
-
-### Current Implementation Constraints
-
-- **In-memory storage**: Currently using local memory for discount storage (will be replaced with DB)
-- **Single-discount application**: Only the most beneficial discount is applied to a cart
-- **Limited discount types**: Currently supporting only percentage-based discounts
-- **No user-specific discounts**: Discounts apply to all users equally
-
-### Security Considerations
-
-- **Input validation**: All inputs are validated using Zod schema validation
-- **Error handling**: Proper error boundaries to prevent exposing internal details
-- **No authentication yet**: Admin API endpoints need authentication (future work)
-- **Missing rate limiting**: API endpoints should have rate limiting implemented
-
-### Data Models
-
-```typescript
-// Base discount model
-interface Discount {
-  id: string;
-  name: string;
-  description: string;
-  startDate: Date;
-  endDate: Date | null;
-  isActive: boolean;
-  discountType: DiscountType;
-  priority: number;
-  rules: Rule[];
-}
-
-// Specific discount type implementations
-interface PercentageDiscount extends Discount {
-  percentage: number;
-  maximumDiscountAmount?: number;
-}
-
-interface FixedAmountDiscount extends Discount {
-  amount: number;
-  minimumPurchaseAmount?: number;
-}
-```
-
-## Implementation Strategy
-
-### Phase 1: Core Framework (1-2 weeks)
-
-1. Set up project structure and dependencies
-2. Implement basic discount models and database schema
-3. Create core discount calculation logic
-4. Develop basic API endpoints for discount CRUD operations
-
-### Phase 2: Advanced Features (1-2 weeks)
-
-1. Implement complex discount types (bundle, tiered)
-2. Add rule engine for eligibility conditions
-3. Create discount combination logic
-4. Implement event handling for order processing
-
-### Phase 3: Integration and Testing (1 week)
-
-1. Integrate with other services (product, order, customer)
-2. Develop comprehensive test suite
-3. Performance testing and optimization
-4. Documentation and API specifications
-
-### Phase 4: Deployment and Monitoring (1 week)
-
-1. Set up CI/CD pipeline
-2. Configure monitoring and alerting
-3. Deploy to staging and production environments
-4. Implement analytics for discount usage
-
-## Technical Decisions
-
-### Language and Framework
-
-- **Node.js with TypeScript**: For type safety and maintainability
-- **Express.js or NestJS**: For API development
-- **PostgreSQL or MongoDB**: For data storage depending on query patterns
-
-### Testing Strategy
-
-- **Unit Tests**: For individual components using Jest
-- **Integration Tests**: For API endpoints and service interactions
-- **Performance Tests**: For discount calculation under load
-
-### Deployment
-
-- **Docker Containers**: For consistent deployment
-- **Kubernetes**: For orchestration and scaling
-- **CI/CD**: GitHub Actions or Jenkins
-
-## Constraints and Considerations
-
-### Performance Requirements
-
-- Discount calculations must complete in under 200ms
-- System should handle 1000+ concurrent discount calculations
-- Cache frequently used discount rules
-
-### Security Considerations
-
-- All admin operations require authentication
-- Validate all input data
-- Implement rate limiting for API endpoints
-- Log all discount applications for audit purposes
-
-### Business Rules
-
-- Multiple discounts may or may not be combinable
-- Some discounts are time-bound or user-specific
-- Maximum discount percentage/amount may be capped
-- Discounts may have priority levels
-
-## Potential Challenges and Solutions
-
-### Challenges
-
-1. **Performance**: Complex discount calculations could become resource-intensive
-2. **Concurrency**: Multiple discounts being applied simultaneously
-3. **Business Logic Complexity**: Handling many discount types and rules
-4. **Integration**: Working with other services seamlessly
-
-### Solutions
-
-1. Use caching for frequently accessed discount rules
-2. Implement optimistic locking for concurrent discount applications
-3. Design a flexible rule engine that can handle complex business logic
-4. Develop clear API contracts and use event-driven patterns for loose coupling
-
-## Future Enhancements
-
-### Near-term Improvements
-
-- **Database storage**: Replace in-memory storage with actual database
-- **Authentication**: Implement JWT-based auth for admin endpoints
-- **Multiple discount application**: Support combining compatible discounts
-- **Fixed amount discounts**: Support fixed monetary amount off
-- **Discount codes**: Support for manual discount code entry
-
-### Long-term Features
-
-- **User-specific discounts**: Target discounts to specific user segments
-- **Advanced promo types**: Tiered discounts, bundles, loyalty rewards
-- **Analytics dashboard**: Track discount performance and usage
-- **A/B testing**: Test different discount strategies
-- **Dynamic pricing**: ML-based price optimization
-
-## Setup and Running
+1. Clone the repository
+2. Install dependencies:
 
 ```bash
-# Install dependencies
 npm install
-
-# Run in development
-npx ts-node-dev src/index.ts
-
-# Build for production
-npx tsc
-
-# Run production build
-node build/index.js
 ```
 
-## API Endpoints
+3. Build the TypeScript code:
 
-### Discount Management
+```bash
+npm run build
+```
 
-- `GET /api/discounts` - List all discounts
-- `GET /api/discounts/:id` - Get a specific discount
-- `POST /api/discounts` - Create a new discount
-- `PUT /api/discounts/:id` - Update an existing discount
-- `DELETE /api/discounts/:id` - Remove a discount
+4. Start the server:
 
-### Cart Processing
+```bash
+npm start
+```
 
-- `POST /api/cart/apply-discounts` - Process cart and apply available discounts
+For development with auto-restart:
+
+```bash
+npm run dev
+```
+
+The server will run on http://localhost:3000/api by default. You can modify the port by setting the PORT environment variable.
+
+### Testing the API
+
+You can use tools like Postman or curl to test the API endpoints:
+
+#### Coupon Management
+
+```bash
+# List all coupons (including expired)
+curl "http://localhost:3000/api/coupons?showExpired=true"
+
+# List only active coupons
+curl http://localhost:3000/api/coupons
+
+# Get a specific coupon by ID
+curl http://localhost:3000/api/coupons/your-coupon-id
+
+# Create a new cart-wide discount coupon
+curl -X POST http://localhost:3000/api/coupons \
+  -H "Content-Type: application/json" \
+  -d '{
+    "discountType": "CART_WISE",
+    "discountPercentage": 10,
+    "threshold": 100,
+    "endDate": "2024-12-31"
+  }'
+
+# Create a product-specific discount coupon
+curl -X POST http://localhost:3000/api/coupons \
+  -H "Content-Type: application/json" \
+  -d '{
+    "discountType": "PRODUCT_WISE",
+    "discountPercentage": 15,
+    "productWiseProducts": [
+      {
+        "productId": "prod-123",
+        "quantity": 1
+      },
+      {
+        "productId": "prod-456",
+        "quantity": 2
+      }
+    ],
+    "threshold": 50,
+    "endDate": "2024-12-31"
+  }'
+
+# Create a Buy X Get Y promotion
+curl -X POST http://localhost:3000/api/coupons \
+  -H "Content-Type: application/json" \
+  -d '{
+    "discountType": "BXGY",
+    "buyProducts": [
+      {
+        "productId": "prod-123",
+        "quantity": 2
+      }
+    ],
+    "getProducts": [
+      {
+        "productId": "prod-456",
+        "quantity": 1
+      }
+    ],
+    "endDate": "2024-12-31"
+  }'
+
+# Update an existing coupon
+curl -X PUT http://localhost:3000/api/coupons/your-coupon-id \
+  -H "Content-Type: application/json" \
+  -d '{
+    "discountType": "CART_WISE",
+    "discountPercentage": 20,
+    "threshold": 150,
+    "endDate": "2024-12-31"
+  }'
+
+# Delete a coupon
+curl -X DELETE http://localhost:3000/api/coupons/your-coupon-id
+```
+
+#### Discount Application
+
+```bash
+# Find applicable coupons for a cart
+curl -X POST http://localhost:3000/api/applicable-coupons \
+  -H "Content-Type: application/json" \
+  -d '{
+    "items": [
+      {
+        "productId": "prod-123",
+        "quantity": 2,
+        "price": 50
+      },
+      {
+        "productId": "prod-456",
+        "quantity": 1,
+        "price": 75
+      }
+    ]
+  }'
+
+# Apply a specific coupon to a cart
+curl -X POST http://localhost:3000/api/apply-coupon/your-coupon-id \
+  -H "Content-Type: application/json" \
+  -d '{
+    "items": [
+      {
+        "productId": "prod-123",
+        "quantity": 2,
+        "price": 50
+      },
+      {
+        "productId": "prod-456",
+        "quantity": 1,
+        "price": 75
+      }
+    ]
+  }'
+```
+
+#### Example Workflow
+
+Here's a complete workflow to test the discount system:
+
+1. Create a cart-wide 10% discount coupon:
+
+```bash
+curl -X POST http://localhost:3000/api/coupons \
+  -H "Content-Type: application/json" \
+  -d '{
+    "discountType": "CART_WISE",
+    "discountPercentage": 10,
+    "threshold": 100,
+    "endDate": "2024-12-31"
+  }'
+```
+
+Response will include a coupon ID that we'll use in subsequent requests.
+
+2. Check if the coupon applies to our cart:
+
+```bash
+curl -X POST http://localhost:3000/api/applicable-coupons \
+  -H "Content-Type: application/json" \
+  -d '{
+    "items": [
+      {
+        "productId": "prod-123",
+        "quantity": 3,
+        "price": 40
+      }
+    ]
+  }'
+```
+
+3. Apply the coupon to the cart:
+
+```bash
+curl -X POST http://localhost:3000/api/apply-coupon/GENERATED_COUPON_ID \
+  -H "Content-Type: application/json" \
+  -d '{
+    "items": [
+      {
+        "productId": "prod-123",
+        "quantity": 3,
+        "price": 40
+      }
+    ]
+  }'
+```
+
+The response will contain the cart with applied discounts, including the original price, discount amount, and final price.
+
+#### Health Check
+
+```bash
+# Check if the API is running
+curl http://localhost:3000/api/health
+```

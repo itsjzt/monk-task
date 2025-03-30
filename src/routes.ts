@@ -11,7 +11,7 @@ import {
   applyCouponController,
   getApplicableCouponsController,
 } from "./controllers/discountController";
-import { maskInternalErrors } from "./utils/maskInternalError";
+import { maskExceptions } from "./utils/maskExceptions";
 
 const router = Router();
 
@@ -24,23 +24,20 @@ router.get("/health", (req: Request, res: Response) => {
   });
 });
 
-router.get("/coupons", maskInternalErrors(listCouponsController));
-router.get("/coupons/:couponId", maskInternalErrors(getCouponByIdController));
-router.post("/coupons", maskInternalErrors(createCouponController));
-router.delete("/coupons/:couponId", maskInternalErrors(deleteCouponController));
-router.put("/coupons/:couponId", maskInternalErrors(updateCouponController));
+router.get("/coupons", maskExceptions(listCouponsController));
+router.get("/coupons/:couponId", maskExceptions(getCouponByIdController));
+router.post("/coupons", maskExceptions(createCouponController));
+router.delete("/coupons/:couponId", maskExceptions(deleteCouponController));
+router.put("/coupons/:couponId", maskExceptions(updateCouponController));
 router.post(
   "/applicable-coupons",
-  maskInternalErrors(getApplicableCouponsController)
+  maskExceptions(getApplicableCouponsController)
 );
-router.post(
-  "/apply-coupon/:couponId",
-  maskInternalErrors(applyCouponController)
-);
+router.post("/apply-coupon/:couponId", maskExceptions(applyCouponController));
 
 // Catch all for invalid paths
 router.all("*", (req: Request, res: Response) => {
-  notFound(res, "Api endpoint not found");
+  notFound(res, "Endpoint not found");
 });
 
 export default router;
